@@ -142,7 +142,7 @@ ggplot()+
   theme_classic()
 
   
-
+tmap_mode("view")
 tm_shape(caro) +
   tm_dots(size = 0.1, col = "red") +
   tm_shape(caro3) +
@@ -151,12 +151,7 @@ tm_shape(caro) +
   tm_dots(size = 0.1, col = "blue") +
   tm_shape(caro9) +
   tm_dots(size = 0.1, col = "yellow") +
-  tm_layout(legend.show = TRUE) +
-  tm_lines(caro, col = "red") +
-  tm_lines(caro3, col = "green") +
-  tm_lines(caro6, col = "blue") +
-  tm_lines(caro9, col = "yellow") +
-  tmap_mode("view")
+  tm_layout(legend.show = TRUE) 
 
 
 # Farben definieren
@@ -179,22 +174,6 @@ tm_shape(caro) +
 #Ich komme hier nicht weiter mit den Linien....
 
 #Versuch in ggplot2
-caro_sorted <- caro|> group_by((DatetimeUTC)) |> summarise(caro_sorted)
-caro3_sorted <- caro3|> group_by((DatetimeUTC))|> summarise(caro3_sorted)
-caro6_sorted <- caro6|> group_by((DatetimeUTC))|> summarise(caro6_sorted)
-caro9_sorted <- caro9 |> group_by((DatetimeUTC))|> summarise(caro9_sorted)
-
-ggplot() +
-  geom_point(data=caro_sorted, aes(E, N, color="caro")) +
-  geom_point(data=caro3_sorted, aes(E, N, color="caro3")) +
-  geom_point(data=caro6_sorted, aes(E, N, color="caro6")) +
-  geom_point(data=caro9_sorted, aes(E, N, color="caro9")) +
-  geom_line(data=bind_rows(caro_sorted, caro3_sorted, caro6_sorted, caro9_sorted),
-            aes(E, N, group=TierName, color=TierName)) +
-  labs(x="Longitude", y="Latitude", color="Data") +
-  theme_bw()
-
-
 ggplot()+
   geom_point(data=caro, aes(E,N, color="caro"))+
   geom_point(data=caro3, aes(E,N, color="caro3"))+
@@ -203,6 +182,5 @@ ggplot()+
   geom_line(data=caro3, aes(x=E, y=N, group="caro3"), color="navy") +
   xlab("Longitude") +
   ylab("Latitude")
- 
-str(caro)
+#Hier sind die Linien nicht in zeitlicher Reihenfolge
 
