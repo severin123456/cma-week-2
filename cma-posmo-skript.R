@@ -4,6 +4,7 @@ library(sf)
 library(dplyr)
 library(ggplot2)
 library(lubridate)
+library(tmap)
 
 posmo_sevi <- read_delim("data_posmo/posmo_2023-01-01T00_00_00+01_00-2023-04-30T23_59_59+02_00.csv", delim=",") 
 
@@ -51,13 +52,11 @@ posmo_sevi %>%
 ggplot(posmo_sevi) +
   geom_sf()
 
-library(ggplot2)
+#Nur zu Fuss
+unique(posmo_sevi$transport_mode)
 
-# Erstellen einer neuen Spalte mit dem Tag
-posmo_sevi$Tag <- as.Date(posmo_sevi$DatetimeUTC)
+pedestrian <- posmo_sevi |> 
+  filter(transport_mode=="Walk")
 
-# Erstellen des ggplots
-ggplot(posmo_sevi) +
-  geom_sf(aes(color = factor(date)) +
-  scale_color_brewer(palette = "Set1")
-  
+ggplot(pedestrian) +
+  geom_sf()
