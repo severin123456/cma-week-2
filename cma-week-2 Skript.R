@@ -7,12 +7,16 @@ library(readr)
 library(sf)
 library(ggplot2)
 
+###Task 1
+
 #Daten einlesen
 wildschwein_BE <- read_delim("wildschwein_BE_2056.csv", ",")
 
 #Datensatz mit geografischen Koordinaten in eine räumliche Geometrie umwandeln 
 #z.B. Breiten und Längengrad in Punkte, Linien oder Polygone
 wildschwein_BE <- st_as_sf(wildschwein_BE, coords = c("E", "N"), crs = 2056, remove = FALSE)
+
+###Task 2
 
 #Timelag zwischen den einzelnen Datenerhebungen berechnen
 wildschwein_BE$timelag_sec <- as.integer(difftime(lead(wildschwein_BE$DatetimeUTC), wildschwein_BE$DatetimeUTC, units = "sec"))
@@ -41,3 +45,16 @@ wildschwein_BE |>
   geom_line()
 #Am Tag wurden weniger Datenpunkte erhoben als in der Nacht
 
+###Task 3
+
+
+wildschwein_BE <- wildschwein_BE |> 
+  group_by(TierName) |> 
+  mutate(steplength_m=sqrt((E-lead(E))^2+(N-lead(N))^2))
+
+wildschwein_BE <- wildschwein_BE |> 
+  mutate(speed_ms = steplength_m/timelag_sec)
+
+log10(0.4)
+hist(wildschwein_BE$speed_ms)
+hist(log10(wildschwein_BE$speed_ms),100)
