@@ -6,7 +6,7 @@ library(dplyr)
 library(readr)
 library(sf)
 library(ggplot2)
-
+library(tmap)
 
 Sys.setenv(TZ = "UTC")
 ###Task 1
@@ -94,10 +94,115 @@ nrow(caro)/9
 nrow(caro9)
 
 #timelag berechnen
-#Mit mutate & lag()
-caro_lag <- caro |> 
-  mutate(caro, timelag_sec=as.integer(difftime(DatetimeUTC, lag(DatetimeUTC))))
 #Mit mutate & lead()
-caro_lead <- caro |> 
-  mutate(caro, timelag_sec=(lead(DatetimeUTC),))
+caro <- caro |> 
+  mutate(timelag_sec=as.integer(difftime(lead(DatetimeUTC), DatetimeUTC, units = "sec" )))
+caro3 <- caro3 |> 
+  mutate(timelag_sec=as.integer(difftime(lead(DatetimeUTC), DatetimeUTC, units = "sec" )))
+caro6 <- caro6 |> 
+  mutate(timelag_sec=as.integer(difftime(lead(DatetimeUTC), DatetimeUTC, units = "sec" )))
+caro9 <- caro9 |> 
+  mutate(timelag_sec=as.integer(difftime(lead(DatetimeUTC), DatetimeUTC, units = "sec" )))
+
+#steplength
+caro <- caro |> 
+  group_by(TierName) |> 
+  mutate(steplength_m=sqrt((E-lead(E))^2+(N-lead(N))^2))
+caro3 <- caro3 |> 
+  group_by(TierName) |> 
+  mutate(steplength_m=sqrt((E-lead(E))^2+(N-lead(N))^2))
+caro6 <- caro6 |> 
+  group_by(TierName) |> 
+  mutate(steplength_m=sqrt((E-lead(E))^2+(N-lead(N))^2))
+caro9 <- caro9 |> 
+  group_by(TierName) |> 
+  mutate(steplength_m=sqrt((E-lead(E))^2+(N-lead(N))^2))
+
+#speed in m/s
+caro <- caro |> 
+  mutate(speed_ms=steplength_m/timelag_sec)
+caro3 <- caro3 |> 
+  mutate(speed_ms=steplength_m/timelag_sec)
+caro6 <- caro6 |> 
+  mutate(speed_ms=steplength_m/timelag_sec)
+caro9 <- caro9 |> 
+  mutate(speed_ms=steplength_m/timelag_sec)
+
+
+#Plots und Karten
+
+ggplot()+
+  labs(x = "Zeit", y = "Geschwindigkeit (m/s)") +
+  ggtitle(paste("Geschwindigkeit von Caro"))+
+  geom_line(data=caro, aes(DatetimeUTC,speed_ms, color="caro"))+
+  geom_line(data=caro3, aes(DatetimeUTC,speed_ms, color= "caro3"))+
+  geom_line(data=caro6, aes(DatetimeUTC,speed_ms, color="caro6"))+
+  geom_line(data=caro9, aes(DatetimeUTC,speed_ms, color="caro9"))+
+  scale_color_manual(values = c("orange4", "orange", "navy", "magenta"))+
+  theme_classic()
+
+  
+
+tm_shape(caro) +
+  tm_dots(size = 0.1, col = "red") +
+  tm_shape(caro3) +
+  tm_dots(size = 0.1, col = "green") +
+  tm_shape(caro6) +
+  tm_dots(size = 0.1, col = "blue") +
+  tm_shape(caro9) +
+  tm_dots(size = 0.1, col = "yellow") +
+  tm_layout(legend.show = TRUE) +
+  tm_lines(caro, col = "red") +
+  tm_lines(caro3, col = "green") +
+  tm_lines(caro6, col = "blue") +
+  tm_lines(caro9, col = "yellow") +
+  tmap_mode("view")
+
+
+# Farben definieren
+my_colors <- c("red", "green", "blue", "yellow")
+
+# Karten erstellen
+tm_shape(caro) +
+  tm_dots(size = 0.5, col = my_colors[1]) +
+  tm_shape(caro3) +
+  tm_dots(size = 0.5, col = my_colors[2]) +
+  tm_shape(caro6) +
+  tm_dots(size = 0.5, col = my_colors[3]) +
+  tm_shape(caro9) +
+  tm_dots(size = 0.5, col = my_colors[4]) +
+  tm_lines(lwd = 0.5, col = my_colors, 
+           ids = c("caro", "caro3", "caro6", "caro9"),
+           ignore.na = TRUE) +
+  tm_layout(legend.show = TRUE) +
+  tmap_mode("view")
+#Ich komme hier nicht weiter mit den Linien....
+
+#Versuch in ggplot2
+caro_sorted <- caro|> group_by((DatetimeUTC)) |> summarise(caro_sorted)
+caro3_sorted <- caro3|> group_by((DatetimeUTC))|> summarise(caro3_sorted)
+caro6_sorted <- caro6|> group_by((DatetimeUTC))|> summarise(caro6_sorted)
+caro9_sorted <- caro9 |> group_by((DatetimeUTC))|> summarise(caro9_sorted)
+
+ggplot() +
+  geom_point(data=caro_sorted, aes(E, N, color="caro")) +
+  geom_point(data=caro3_sorted, aes(E, N, color="caro3")) +
+  geom_point(data=caro6_sorted, aes(E, N, color="caro6")) +
+  geom_point(data=caro9_sorted, aes(E, N, color="caro9")) +
+  geom_line(data=bind_rows(caro_sorted, caro3_sorted, caro6_sorted, caro9_sorted),
+            aes(E, N, group=TierName, color=TierName)) +
+  labs(x="Longitude", y="Latitude", color="Data") +
+  theme_bw()
+
+
+ggplot()+
+  geom_point(data=caro, aes(E,N, color="caro"))+
+  geom_point(data=caro3, aes(E,N, color="caro3"))+
+  scale_color_manual(values = c("orange4", "navy")) +
+  geom_line(data=caro, aes(x=E, y=N, group="caro"), color="orange4") +
+  geom_line(data=caro3, aes(x=E, y=N, group="caro3"), color="navy") +
+  xlab("Longitude") +
+  ylab("Latitude")
+ 
+str(caro)
 
