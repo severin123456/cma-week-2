@@ -39,6 +39,5 @@ wildschwein_BE |>
   ggplot(aes(DatetimeUTC,timelag_sec, colour = TierName))+
   geom_point()+
   geom_line()
-)
 #Am Tag wurden weniger Datenpunkte erhoben als in der Nacht
 
