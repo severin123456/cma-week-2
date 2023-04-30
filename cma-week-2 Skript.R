@@ -7,6 +7,8 @@ library(readr)
 library(sf)
 library(ggplot2)
 
+
+Sys.setenv(TZ = "UTC")
 ###Task 1
 
 #Daten einlesen
@@ -47,14 +49,55 @@ wildschwein_BE |>
 
 ###Task 3
 
-
+#Euklidische Distanz berechnet zwischen Zeile 1 und 2
+#Dabei ist lead(E)/lead(N) der Wert in der Zeile 2
+#Zwischen zwei Tieren bleibt aber der unerwünschte Wert bestehen
 wildschwein_BE <- wildschwein_BE |> 
   group_by(TierName) |> 
   mutate(steplength_m=sqrt((E-lead(E))^2+(N-lead(N))^2))
 
+#m/sec als neue Spalte hibzufügen...also in Zeile 1 wird die durchschnittsgeschwindigkeit
+#zwischen Zeile 1 und Zeile 2 angegeben...
 wildschwein_BE <- wildschwein_BE |> 
   mutate(speed_ms = steplength_m/timelag_sec)
 
-log10(0.4)
-hist(wildschwein_BE$speed_ms)
-hist(log10(wildschwein_BE$speed_ms),100)
+hist(wildschwein_BE$speed_ms, breaks=10)
+hist(log10(wildschwein_BE$speed_ms),breaks=100)
+
+###Task 
+
+#Daten einlesen
+caro <- read_delim("caro60.csv", delim=",")
+
+#st_as_sf
+caro <- st_as_sf(caro, coords = c("E", "N"), crs = 2056, remove = FALSE)
+
+
+#Jede 3. Zeile aus caro in neuem Datenset
+#Ab der 1. Zeile mittels seq(1,...)
+#Ab der 3. Zeile mittels seq(3,...)
+caro3 <- caro[seq(1, nrow(caro), by=3),]
+nrow(caro)
+nrow(caro)/3
+nrow(caro3)
+
+#Jede 6. Zeile aus caro in neuem Datenset
+caro6 <-  caro[seq(1, nrow(caro), by=6),]
+nrow(caro)
+nrow(caro)/6
+nrow(caro6)
+
+#Jede 9. Zeile aus caro in neuem Datenset
+caro9 <-  caro[seq(1, nrow(caro), by=9),]
+nrow(caro)
+nrow(caro)/9
+nrow(caro9)
+
+#timelag berechnen
+#Mit mutate & lag()
+caro_lag <- caro |> 
+  mutate(caro, timelag_sec=as.integer(difftime(DatetimeUTC, lag(DatetimeUTC))))
+#Mit mutate & lead()
+caro_lead <- caro |> 
+  mutate(caro, timelag_sec=(lead(DatetimeUTC),))
+
