@@ -64,7 +64,7 @@ wildschwein_BE <- wildschwein_BE |>
 hist(wildschwein_BE$speed_ms, breaks=10)
 hist(log10(wildschwein_BE$speed_ms),breaks=100)
 
-###Task 
+###Task 4
 
 #Daten einlesen
 caro <- read_delim("caro60.csv", delim=",")
@@ -184,3 +184,4 @@ ggplot()+
   ylab("Latitude")
 #Hier sind die Linien nicht in zeitlicher Reihenfolge
 
+#Task 6
